@@ -24,12 +24,15 @@ pipeline {
             }
         }
 
-        stage('Unit') {
+        stage('UnitRest') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     bat '''
+                        set FLASK_APP=app\\api.py
+                        start flask run
+                        
                         set PYTHONPATH=%WORKSPACE%
-                        pytest --junitxml=result-unit.xml test/unit
+                        pytest --junitxml=result-unit.xml test/rest
                     '''
                 }
             }
