@@ -53,6 +53,7 @@ pipeline {
                 }
 
             }
+        }
 
         stage('Results') {
             steps {
