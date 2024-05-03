@@ -16,11 +16,19 @@ pipeline {
             }
         }
 
+        stage('Build') {
+            steps {
+                echo 'Eyyy, esto es Python. No hay que compilar nada!!!'
+                echo WORKSPACE
+                bat 'dir'
+            }
+        }
+
         stage('Unit') {
             steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                 bat '''
-                    set PYTHONPATH=.
-                    pytest test\\unit
+                    set PYTHONPATH=%WORKSPACE%
                     pytest --junitxml=result-unit.xml test/unit
                 '''
             }
