@@ -19,7 +19,7 @@ pipeline {
         stage('Unit') {
             steps {
                 bat '''
-                    set PYTHONPATH=.
+                    set PYTHONPATH=%WORKSPACE%
                     pytest test\\unit
                     pytest --junitxml=result-unit.xml test/unit
                 '''
