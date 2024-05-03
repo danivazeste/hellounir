@@ -27,10 +27,10 @@ pipeline {
         stage('Unit') {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                bat '''
-                    set PYTHONPATH=%WORKSPACEPATH%
-                    pytest --junitxml=result-unit.xml test/unit
-                '''
+                    bat '''
+                        set PYTHONPATH=%WORKSPACE%
+                        pytest --junitxml=result-unit.xml test/unit
+                    '''
                 }
             }
         }
