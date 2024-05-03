@@ -19,7 +19,7 @@ pipeline {
         stage('Unit') {
             steps {
                 bat '''
-                    set PYTHONPATH='C:\Users\yog19\AppData\Roaming\Python\Python311\Scripts'
+                    set PYTHONPATH='C:\Users\yog19\AppData\Roaming\Python\Python311\Scripts\'
                     pytest test\\unit
                     pytest --junitxml=result-unit.xml test/unit
                 '''
