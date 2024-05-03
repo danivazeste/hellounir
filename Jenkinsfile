@@ -26,6 +26,7 @@ pipeline {
 
         stage('UnitRest') {
             steps {
+                timeout(time: 1, unit: 'MINUTES') {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     bat '''
                         set FLASK_APP=app\\api.py
@@ -34,6 +35,7 @@ pipeline {
                         set PYTHONPATH=%WORKSPACE%
                         pytest --junitxml=result-unit.xml test/rest
                     '''
+                }
                 }
             }
         }
