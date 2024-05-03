@@ -28,8 +28,7 @@ pipeline {
             steps {
                 bat '''
                     set PYTHONPATH=%WORKSPACE%
-                    pytest test\\unit
-                    pytest --junitxml=result-unit.xml test/unit
+                    pytest test/unit
                 '''
             }
         }
