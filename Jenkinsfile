@@ -16,14 +16,6 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-                echo 'Esto es Python. No hay que compilar nada!!!'
-                echo WORKSPACE
-                bat 'dir'
-            }
-        }
-
         stage('Unit') {
             steps {
                 bat '''
