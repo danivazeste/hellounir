@@ -46,7 +46,7 @@ pipeline {
                                 set FLASK_APP=app\\api.py
                                 start flask run
                                 start java -jar C:\\Users\\yog19\\Desktop\\Caso práctico 1 UNIR\\software\\wiremock-standalone-3.5.4 -v --port 9090 --root-dir test\\wiremock
-                                timeout(time: 2, unit: 'MINUTES')
+                                timeout /t 60 > nul
                                 set PYTHONPATH=%WORKSPACE%
                                 pytest --junitxml=result-unit.xml test/rest
                             '''
