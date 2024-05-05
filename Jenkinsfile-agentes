@@ -33,7 +33,7 @@ pipeline {
                 bat 'dir'
                 bat 'whoami'
                 bat 'hostname'
-                stash includes: '**/test2-agentes/*',name:'repo'
+                stash includes: '**/*',name:'repo'
             }
         }
 
