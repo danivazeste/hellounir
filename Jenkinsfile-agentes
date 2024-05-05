@@ -91,7 +91,7 @@ pipeline {
             }
         }
     }
-    agent { label 'principal' }
+    agent any
     post {
         // Limpiar workspace después de ejecutar.
         always {
