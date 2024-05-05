@@ -68,8 +68,9 @@ pipeline {
                                 hostname
                                 set PYTHONPATH=%WORKSPACE%
                                 set FLASK_APP=%WORKSPACE%\\app\\api.py
-                                start flask run
                                 start java -jar %WORKSPACE%\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir %WORKSPACE%\\test\\wiremock
+                                start flask run
+                                
                                 pytest --junitxml=%WORKSPACE%\\result-rest.xml %WORKSPACE%\\test\\rest
                             '''
                             stash includes: 'result-rest.xml', name:'stash-result-rest'
