@@ -28,7 +28,7 @@ pipeline {
             agent { label 'principal' }
             steps {
                 //Build que muestra el WORKSPACE y directorio de trabajo.
-                dir()
+                
                 echo 'Esto es Python. No hay que compilar nada!!!'
                 echo WORKSPACE
                 bat 'dir'
