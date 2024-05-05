@@ -1,0 +1,105 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            agent { label 'principal' }
+            steps {
+                // HELLO WORLD
+                echo 'Reto2 del Caso Práctico 1 de Daniel Vázquez Esteban'
+                bat 'whoami'
+                bat 'hostname'
+                echo WORKSPACE
+            }
+        }
+
+        stage('Get Code') {
+            agent { label 'principal' }
+            steps {
+                // Obtener código del repositorio
+                git 'https://github.com/danivazeste/hellounir.git'
+                bat 'whoami'
+                bat 'hostname'
+                echo WORKSPACE
+            }
+        }
+
+        stage('Build') {
+            agent { label 'principal' }
+            steps {
+                //Build que muestra el WORKSPACE y directorio de trabajo.
+                echo 'Esto es Python. No hay que compilar nada!!!'
+                echo WORKSPACE
+                bat 'dir'
+                bat 'whoami'
+                bat 'hostname'
+                stash includes: '**/*',name:'repo'
+            }
+        }
+
+        stage('Tests') {
+            parallel {
+
+                stage('Unit') {
+                    agent { label 'agente1' }
+                    steps {
+                        //Test UNIT
+                        unstash 'repo'
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            bat '''
+                                whoami
+                                hostname
+                                set PYTHONPATH=%WORKSPACE%
+                                pytest --junitxml=result-unit.xml test\\unit
+                            '''
+                            stash includes: 'result-unit.xml', name:'stash-result-unit'
+                        }
+                    }
+                }
+        
+                stage('Rest') {
+                    agent { label 'agente2' }
+                    steps {
+                        //Test REST con lanzamiento de microservicios
+                        unstash 'repo'
+                        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                            bat '''
+                                whoami
+                                hostname
+                                set PYTHONPATH=%WORKSPACE%
+                                set FLASK_APP=%WORKSPACE%\\app\\api.py
+                                start flask run
+                                start java -jar %WORKSPACE%\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir %WORKSPACE%\\test\\wiremock
+                                pytest --junitxml=%WORKSPACE%\\result-rest.xml %WORKSPACE%\\test\\rest
+                            '''
+                            stash includes: 'result-rest.xml', name:'stash-result-rest'
+                        }
+                    }
+                }
+
+            }
+        }
+
+        stage('Results') {
+            agent { label 'principal' }
+            steps {
+                // Ficheros de resultado
+                unstash 'stash-result-unit'
+                unstash 'stash-result-rest'
+                junit 'result*.xml'
+                echo 'FINISH!!!'
+            }
+        }
+    }
+    post {
+        // Clean after build
+        always {
+            cleanWs(cleanWhenNotBuilt: false,
+                    deleteDirs: true,
+                    disableDeferredWipeout: true,
+                    notFailBuild: true,
+                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                               [pattern: '.propsfile', type: 'EXCLUDE']])
+        }
+    }
+}
