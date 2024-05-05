@@ -50,7 +50,7 @@ pipeline {
                                 whoami
                                 hostname
                                 set PYTHONPATH=%WORKSPACE%
-                                pytest --junitxml=result-unit.xml test/unit
+                                pytest --junitxml=result-unit.xml test\\unit
                             '''
                             stash includes: 'result-unit.xml', name:'stash-result-unit'
                         }
@@ -67,12 +67,12 @@ pipeline {
                                 whoami
                                 hostname
                                 set PYTHONPATH=%WORKSPACE%
-                                set FLASK_APP=app\\api.py
+                                set FLASK_APP=%WORKSPACE%\\app\\api.py
                                 start flask run
-                                start java -jar C:\\Users\\yog19\\Desktop\\CP1UNIR\\LinuxB\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
+                                start java -jar C:\\Users\\yog19\\Desktop\\CP1UNIR\\LinuxB\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir %WORKSPACE%\\test\\wiremock
                                 exit
                                 set PYTHONPATH=%WORKSPACE%
-                                pytest --junitxml=result-rest.xml test/rest
+                                pytest --junitxml=%WORKSPACE%\\result-rest.xml %WORKSPACE%\\test\\rest
                             '''
                             stash includes: 'result-rest.xml', name:'stash-result-rest'
                         }
