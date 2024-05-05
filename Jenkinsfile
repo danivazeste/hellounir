@@ -30,6 +30,7 @@ pipeline {
 
                 stage('Unit') {
                     steps {
+                        //Test UNIT
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             bat '''
                                 set PYTHONPATH=%WORKSPACE%
@@ -41,12 +42,13 @@ pipeline {
         
                 stage('Rest') {
                     steps {
+                        //Test REST con lanzamiento de microservicios
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             bat '''
                                 set FLASK_APP=app\\api.py
                                 start flask run
                                 start java -jar C:\\Users\\yog19\\Desktop\\CP1UNIR\\software\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
-                                waitfor SomethingThatIsNeverHappening /t 60 >nul
+                                exit
                                 set PYTHONPATH=%WORKSPACE%
                                 pytest --junitxml=result-rest.xml test/rest
                             '''
