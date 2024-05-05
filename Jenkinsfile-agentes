@@ -9,7 +9,7 @@ pipeline {
                 echo 'Reto2 del Caso Práctico 1 de Daniel Vázquez Esteban'
                 bat 'whoami'
                 bat 'hostname'
-                echo '${WORKSPACE}'
+                echo ${WORKSPACE}
             }
         }
 
@@ -20,7 +20,7 @@ pipeline {
                 git 'https://github.com/danivazeste/hellounir.git'
                 bat 'whoami'
                 bat 'hostname'
-                echo '${WORKSPACE}'
+                echo ${WORKSPACE}
             }
         }
 
@@ -33,7 +33,7 @@ pipeline {
                 bat 'dir'
                 bat 'whoami'
                 bat 'hostname'
-                stash includes: '/test2-agentes/**',name:'repo'
+                stash includes: '**/test2-agentes/*',name:'repo'
             }
         }
 
