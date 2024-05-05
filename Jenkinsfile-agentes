@@ -28,12 +28,12 @@ pipeline {
             agent { label 'principal' }
             steps {
                 //Build que muestra el WORKSPACE y directorio de trabajo.
-                
                 echo 'Esto es Python. No hay que compilar nada!!!'
                 echo WORKSPACE
                 bat 'dir'
                 bat 'whoami'
                 bat 'hostname'
+                stash includes: '/test2-agentes/**',name:'repo'
             }
         }
 
@@ -44,6 +44,7 @@ pipeline {
                     agent { label 'agente1' }
                     steps {
                         //Test UNIT
+                        unstash 'repo'
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             bat '''
                                 whoami
@@ -51,13 +52,16 @@ pipeline {
                                 set PYTHONPATH=%WORKSPACE%
                                 pytest --junitxml=result-unit.xml test/unit
                             '''
+                            stash includes: 'result-unit.xml', name:'stash-result-unit'
                         }
                     }
                 }
         
                 stage('Rest') {
+                    agent { label 'agente2' }
                     steps {
                         //Test REST con lanzamiento de microservicios
+                        unstash 'repo'
                         catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                             bat '''
                                 whoami
@@ -69,6 +73,7 @@ pipeline {
                                 set PYTHONPATH=%WORKSPACE%
                                 pytest --junitxml=result-rest.xml test/rest
                             '''
+                            stash includes: 'result-rest.xml', name:'stash-result-rest'
                         }
                     }
                 }
@@ -77,8 +82,11 @@ pipeline {
         }
 
         stage('Results') {
+            agent { label 'principal' }
             steps {
                 // Ficheros de resultado
+                unstash 'stash-result-unit'
+                unstash 'stash-result-rest'
                 junit 'result*.xml'
                 echo 'FINISH!!!'
             }
