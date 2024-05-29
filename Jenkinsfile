@@ -1,27 +1,10 @@
 pipeline {
     agent any
 
-    stages {
-        stage('Hello') {
-            steps {
-                // HELLO WORLD
-                echo 'Hello World desde Caso Práctico 1 de Daniel Vázquez Esteban'
-            }
-        }
-
         stage('Get Code') {
             steps {
                 // Obtener código del repositorio
                 git 'https://github.com/danivazeste/hellounir.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                //Build que muestra el WORKSPACE y directorio de trabajo.
-                echo 'Esto es Python. No hay que compilar nada!!!'
-                echo WORKSPACE
-                bat 'dir'
             }
         }
 
@@ -59,12 +42,15 @@ pipeline {
             }
         }
 
-        stage('Results') {
+        stage('Static') {
             steps {
-                // Ficheros de resultado
-                junit 'result*.xml'
-                echo 'FINISH!!!'
+					catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+                bat '''
+                    flake8 --exit-zero --format=pylint app >flake8.out
+					'''
+					recordIssues tools: [flake8(name: 'Flake8', pattern: 'flake8.out')], qualityGates : [[threshold: 8, type: 'TOTAL', unstable: true], [threshold: 10, type: 'TOTAL', unstable: false]]}
             }
         }
+    
+
     }
-}
