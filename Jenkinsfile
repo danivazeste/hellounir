@@ -1,6 +1,6 @@
 pipeline {
     agent any
-
+    stages {
         stage('Get Code') {
             steps {
                 // Obtener código del repositorio
@@ -48,3 +48,4 @@ pipeline {
         }
     
     }
+}
