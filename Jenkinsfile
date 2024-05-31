@@ -56,6 +56,16 @@ pipeline {
                     }
                 }
 
+	stage('Cobertura (Coverage)') {
+					steps {
+						bat '''
+						    coverage combine
+						    coverage report
+						    coverage xml -o coverage.xml
+						'''
+					catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+						cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
+
 	stage('Perfomance') {
             steps {
 		// JMeter
