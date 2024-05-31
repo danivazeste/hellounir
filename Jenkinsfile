@@ -28,14 +28,6 @@ pipeline {
             }
         }
 
-	stage('Perfomance') {
-            steps {
-		// JMeter
-                bat 'C:\\Users\\yog19\\Desktop\\CP1UNIR\\apache-jmeter-5.6.3\\bin\\jmeter -n -t test\\jmeter\\flask.jmx -f -l flask.jtl'
-		perfReport sourceDataFiles : 'flask.jtl'
-            }
-        }
-
         stage('Unit') {
             steps {
                 //Test UNIT
@@ -56,13 +48,21 @@ pipeline {
                             set FLASK_APP=app\\api.py
                             start flask run
                             start java -jar C:\\Users\\yog19\\Desktop\\CP1UNIR\\software\\wiremock-standalone-3.5.4.jar --port 9090 --root-dir test\\wiremock
-                            
+                            timeout /T 20
                             set PYTHONPATH=%WORKSPACE%
                             pytest --junitxml=result-rest.xml test/rest
                             '''
                         }
                     }
                 }
+
+	stage('Perfomance') {
+            steps {
+		// JMeter
+                bat 'C:\\Users\\yog19\\Desktop\\CP1UNIR\\apache-jmeter-5.6.3\\bin\\jmeter -n -t test\\jmeter\\flask.jmx -f -l flask.jtl'
+		perfReport sourceDataFiles : 'flask.jtl'
+            }
+        }
     
     }
 }
