@@ -28,6 +28,13 @@ pipeline {
             }
         }
 
+	stage('Jmeter (Perfomance)') {
+            steps {
+                bat 'C:\\Users\\yog19\\Desktop\\CP1UNIR\\apache-jmeter-5.6.3\\bin\\jmeter -n -t test\\jmeter\\flask.jmx -f -l flask.jtl'
+		perfReport sourceDataFiles : 'flask.jtl'
+            }
+        }
+
         stage('Unit') {
             steps {
                 //Test UNIT
