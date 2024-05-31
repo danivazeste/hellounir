@@ -10,13 +10,15 @@ pipeline {
                 bat 'whoami'
                 bat 'hostname'
                 echo WORKSPACE
+		stash includes: '**/*',name:'repo'
             }
         }
 
         stage('Static') {
             agent { label 'principal' }
             steps {
-		        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+		unstash 'repo'
+		catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
                 bat '''
 		    whoami
 		    hostname
@@ -29,7 +31,8 @@ pipeline {
 	    stage('Security') {
             agent { label 'principal'}
             steps {
-		        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+		unstash 'repo'
+		catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                 bat '''
 		    whoami
 		    hostname
@@ -83,6 +86,7 @@ pipeline {
 		    agent { label 'agente2' }
                     steps {
 		        // JMeter
+			unstash 'repo'
                         bat '''
 				whoami
 				hostname
@@ -98,15 +102,16 @@ pipeline {
         stage('Cobertura (Coverage)') {
 	       agent { label 'agente 1' }
 	       steps {
-	       bat '''
-		      whoami
-		      hostname
-		      coverage run --branch --source=app --omit=app\\__init.py__,app\\api.py -m pytest test\\unit
-		      coverage report
-		      coverage xml -o coverage.xml
-		   '''
-	       catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-		      cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
+	       	  unstash 'repo'
+	       	  bat '''
+		      	 whoami
+		      	 hostname
+		      	 coverage run --branch --source=app --omit=app\\__init.py__,app\\api.py -m pytest test\\unit
+		      	 coverage report
+		      	 coverage xml -o coverage.xml
+		      '''
+	      	  catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+		  cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
 	       }
 	   }
 	}
