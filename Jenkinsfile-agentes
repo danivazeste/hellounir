@@ -3,7 +3,6 @@ pipeline {
 
     stages {
         stage('Get Code') {
-            agent { label 'principal' }
             steps {
                 // Obtener código del repositorio
                 git 'https://github.com/danivazeste/hellounir.git'
