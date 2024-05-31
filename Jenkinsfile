@@ -13,7 +13,7 @@ pipeline {
 		catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
                 bat '''
                     flake8 --exit-zero --format=pylint app >flake8.out
-		'''
+		    '''
 		recordIssues tools: [flake8(name: 'Flake8', pattern: 'flake8.out')], qualityGates : [[threshold: 8, type: 'TOTAL', unstable: true], [threshold: 10, type: 'TOTAL', unhealthy: true]]}
             }
         }
@@ -23,7 +23,7 @@ pipeline {
 		catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                 bat '''
                     bandit --exit-zero -r . -f custom -o bandit.out --severity-level medium --msg-template "{abspath}:{line}: [{test_id}] {msg}"
-                '''
+                    '''
 		recordIssues tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')],  qualityGates: [[threshold: 2, type: 'TOTAL', unstable: true],  [threshold: 4, type: 'TOTAL', unhealthy: true]]}
             }
         }
@@ -51,20 +51,23 @@ pipeline {
                             timeout /T 20
                             set PYTHONPATH=%WORKSPACE%
                             pytest --junitxml=result-rest.xml test/rest
-                            '''
+                         '''
                         }
                     }
                 }
 
 	stage('Cobertura (Coverage)') {
-					steps {
-						bat '''
-						    coverage combine
-						    coverage report
-						    coverage xml -o coverage.xml
-						'''
-					catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-						cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
+	   steps {
+	       bat '''
+		      coverage combine
+		      coverage report
+		      coverage xml -o coverage.xml
+		   '''
+	       catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+		      cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
+	       }
+	   }
+	}
 
 	stage('Perfomance') {
             steps {
