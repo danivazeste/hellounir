@@ -59,9 +59,8 @@ pipeline {
 	stage('Cobertura (Coverage)') {
 	   steps {
 	       bat '''
-		      coverage combine
-		      coverage report
-		      coverage xml -o coverage.xml
+		      coverage run --branch --source=app --omit=app\\__init.py__,app\\api.py -m pytest test\\unit
+		      coverage.xml
 		   '''
 	       catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
 		      cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
