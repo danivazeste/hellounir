@@ -1,18 +1,7 @@
 pipeline {
-    agent any
+    agent none
 
     stages {
-        stage('Hello') {
-            agent { label 'principal' }
-            steps {
-                // HELLO WORLD
-                echo 'Reto2 del Caso Práctico 1 de Daniel Vázquez Esteban'
-                bat 'whoami'
-                bat 'hostname'
-                echo WORKSPACE
-            }
-        }
-
         stage('Get Code') {
             agent { label 'principal' }
             steps {
@@ -24,16 +13,25 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Static') {
             agent { label 'principal' }
             steps {
-                //Build que muestra el WORKSPACE y directorio de trabajo.
-                echo 'Esto es Python. No hay que compilar nada!!!'
-                echo WORKSPACE
-                bat 'dir'
-                bat 'whoami'
-                bat 'hostname'
-                stash includes: '**/*',name:'repo'
+		        catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE'){
+                bat '''
+                    flake8 --exit-zero --format=pylint app >flake8.out
+		            '''
+		        recordIssues tools: [flake8(name: 'Flake8', pattern: 'flake8.out')], qualityGates : [[threshold: 8, type: 'TOTAL', unstable: true], [threshold: 10, type: 'TOTAL', unhealthy: true]]}
+            }
+        }
+
+	    stage('Security') {
+            agent { label 'principal'}
+            steps {
+		        catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                bat '''
+                    bandit --exit-zero -r . -f custom -o bandit.out --severity-level medium --msg-template "{abspath}:{line}: [{test_id}] {msg}"
+                    '''
+		        recordIssues tools: [pyLint(name: 'Bandit', pattern: 'bandit.out')],  qualityGates: [[threshold: 2, type: 'TOTAL', unstable: true],  [threshold: 4, type: 'TOTAL', unhealthy: true]]}
             }
         }
 
@@ -56,7 +54,7 @@ pipeline {
                         }
                     }
                 }
-        
+
                 stage('Rest') {
                     agent { label 'agente2' }
                     steps {
@@ -77,19 +75,30 @@ pipeline {
                     }
                 }
 
+                stage('Perfomance') {
+                    steps {
+		                // JMeter
+                        bat 'C:\\Users\\yog19\\Desktop\\CP1UNIR\\apache-jmeter-5.6.3\\bin\\jmeter -n -t test\\jmeter\\flask.jmx -f -l flask.jtl'
+		                perfReport sourceDataFiles : 'flask.jtl'
+                    }
+                }
+
             }
         }
 
-        stage('Results') {
-            agent { label 'principal' }
-            steps {
-                // Ficheros de resultado
-                unstash 'stash-result-unit'
-                unstash 'stash-result-rest'
-                junit 'result*.xml'
-                echo 'FINISH!!!'
-            }
-        }
+        stage('Cobertura (Coverage)') {
+	       steps {
+	       bat '''
+		      coverage run --branch --source=app --omit=app\\__init.py__,app\\api.py -m pytest test\\unit
+		      coverage report
+		      coverage xml -o coverage.xml
+		   '''
+	       catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+		      cobertura coberturaReportFile: 'coverage.xml', conditionalCoverageTargets: '90,85,80', lineCoverageTargets: '95,85,80', onlyStable: false
+	       }
+	   }
+	}
+
     }
     post {
         // Clean after build
